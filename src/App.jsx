@@ -75,36 +75,39 @@ export default function App() {
         <div 
           className="header-content" 
           style={{ 
-            display: "flex", 
-            flexDirection: "column", 
-            alignItems: "center", 
-            justify: "center",
-            textAlign: "center",
-            gap: "12px" 
+            display: "grid", 
+            gridTemplateColumns: "1fr auto 1fr", 
+            alignItems: "flex-start", 
+            width: "100%",
+            gap: "16px" 
           }}
         >
-          {/* LOGO CENTRALIZADA EM CIMA */}
-          <img
-            src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
-            alt="Logo Camel Autopeças"
-            style={{
-              height: "80px", // Ajustado para 80px para dar bastante destaque no centro
-              width: "auto",
-              objectFit: "contain",
-              borderRadius: "6px"
-            }}
-          />
-
-          {/* TEXTO EMBAIXO DA LOGO */}
-          <div>
-            <span className="logo-badge">CAMEL • AUTOPEÇAS</span>
-            <h1 className="header-title" style={{ marginTop: "4px" }}>
+          {/* LADO ESQUERDO: CATÁLOGO VIRTUAL / PAINEL ADMINISTRATIVO */}
+          <div style={{ textAlign: "left" }}>
+            <h1 className="header-title" style={{ margin: 0, fontSize: "20px" }}>
               {visao === "admin" ? "Painel Administrativo" : "Catálogo Virtual"}
             </h1>
           </div>
 
-          {/* BOTÃO DO PAINEL */}
-          <div style={{ marginTop: "4px" }}>
+          {/* CENTRO: LOGO EM 100PX + CAMEL AUTOPEÇAS */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+            <img
+              src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
+              alt="Logo Camel Autopeças"
+              style={{
+                height: "100px", // Logo configurada em 100px
+                width: "auto",
+                objectFit: "contain",
+                borderRadius: "6px"
+              }}
+            />
+            <span className="logo-badge" style={{ marginTop: "8px" }}>
+              CAMEL • AUTOPEÇAS
+            </span>
+          </div>
+
+          {/* LADO DIREITO: BOTÃO DO PAINEL DA LOJA */}
+          <div style={{ textAlign: "right" }}>
             <button
               className="btn-admin"
               onClick={handleAlternarVisao}
