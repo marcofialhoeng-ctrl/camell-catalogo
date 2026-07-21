@@ -72,28 +72,39 @@ export default function App() {
   return (
     <div>
       <header className="header">
-        <div className="header-content">
-          {/* ÁREA DA LOGO + NOME DA LOJA */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <img
-              src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
-              alt="Logo Camel Autopeças"
-              style={{
-                height: "70px",
-                width: "auto",
-                objectFit: "contain",
-                borderRadius: "6px",
-              }}
-            />
-            <div>
-              <span className="logo-badge">CAMEL • AUTOPEÇAS</span>
-              <h1 className="header-title">
-                {visao === "admin" ? "Painel Administrativo" : "Catálogo Virtual"}
-              </h1>
-            </div>
+        <div 
+          className="header-content" 
+          style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center", 
+            justify: "center",
+            textAlign: "center",
+            gap: "12px" 
+          }}
+        >
+          {/* LOGO CENTRALIZADA EM CIMA */}
+          <img
+            src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
+            alt="Logo Camel Autopeças"
+            style={{
+              height: "80px", // Ajustado para 80px para dar bastante destaque no centro
+              width: "auto",
+              objectFit: "contain",
+              borderRadius: "6px"
+            }}
+          />
+
+          {/* TEXTO EMBAIXO DA LOGO */}
+          <div>
+            <span className="logo-badge">CAMEL • AUTOPEÇAS</span>
+            <h1 className="header-title" style={{ marginTop: "4px" }}>
+              {visao === "admin" ? "Painel Administrativo" : "Catálogo Virtual"}
+            </h1>
           </div>
 
-          <div style={{ display: "flex", gap: "8px" }}>
+          {/* BOTÃO DO PAINEL */}
+          <div style={{ marginTop: "4px" }}>
             <button
               className="btn-admin"
               onClick={handleAlternarVisao}
