@@ -14,8 +14,9 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
   const [codigo, setCodigo] = useState('');
   const [categoria, setCategoria] = useState('automotiva');
   const [descricao, setDescricao] = useState('');
-  const [imagem, setImagem] = useState('');
-  
+  const [imagem, setImagem] = useState(''); // Guarda a URL atual (para edição)
+  const [imagemArquivo, setImagemArquivo] = useState(null); // Guarda o novo arquivo selecionado
+
   // Estado para controlar a edição
   const [produtoEditando, setProdutoEditando] = useState(null);
   const [enviando, setEnviando] = useState(false);
@@ -28,6 +29,7 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
     setCategoria(prod.categoria);
     setDescricao(prod.descricao || '');
     setImagem(prod.imagem);
+    setImagemArquivo(null); // Reseta o arquivo selecionado
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -39,19 +41,46 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
     setCategoria('automotiva');
     setDescricao('');
     setImagem('');
+    setImagemArquivo(null);
   };
 
   // Salva no Supabase (cria novo ou atualiza)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!nome || !codigo || !imagem) {
-      alert('Por favor, preencha os campos obrigatórios.');
+    
+    // Na criação, exige a seleção do arquivo. Na edição, pode manter a foto antiga.
+    if (!nome || !codigo || (!produtoEditando && !imagemArquivo)) {
+      alert('Por favor, preencha os campos obrigatórios e selecione uma imagem.');
       return;
     }
 
     setEnviando(true);
 
     try {
+      let urlImagemFinal = imagem; // Mantém a imagem atual por padrão (se for edição)
+
+      // Se o usuário selecionou um arquivo novo da galeria
+      if (imagemArquivo) {
+        const extensao = imagemArquivo.name.split('.').pop();
+        const nomeArquivo = `${Date.now()}_${Math.random().toString(36).substring(2)}.${extensao}`;
+
+        // Upload no bucket 'Produtos' do Storage
+        const { error: uploadError } = await supabase.storage
+          .from('Produtos')
+          .upload(nomeArquivo, imagemArquivo);
+
+        if (uploadError) {
+          throw new Error('Erro ao enviar foto: ' + uploadError.message);
+        }
+
+        // Pega a URL pública gerada
+        const { data: urlData } = supabase.storage
+          .from('Produtos')
+          .getPublicUrl(nomeArquivo);
+
+        urlImagemFinal = urlData.publicUrl;
+      }
+
       if (produtoEditando) {
         // ATUALIZA A PEÇA
         const { error } = await supabase
@@ -61,7 +90,7 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
             codigo,
             categoria,
             descricao,
-            imagem,
+            imagem: urlImagemFinal,
           })
           .eq('id', produtoEditando.id);
 
@@ -70,7 +99,13 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
       } else {
         // CADASTRAR NOVA
         const { error } = await supabase.from('produtos').insert([
-          { nome, codigo, categoria, descricao, imagem }
+          {
+            nome,
+            codigo,
+            categoria,
+            descricao,
+            imagem: urlImagemFinal,
+          }
         ]);
 
         if (error) throw error;
@@ -144,15 +179,20 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
             </select>
           </div>
 
+          {/* CAMPO NOVO: Upload de Foto da Galeria */}
           <div className="form-group">
-            <label>URL / Link da Foto *</label>
+            <label>Foto da Peça (Galeria / Dispositivo) *</label>
             <input
-              type="text"
+              type="file"
+              accept="image/*"
               className="form-input"
-              value={imagem}
-              onChange={(e) => setImagem(e.target.value)}
-              placeholder="Link da imagem no Supabase Storage"
+              onChange={(e) => setImagemArquivo(e.target.files[0])}
             />
+            {produtoEditando && !imagemArquivo && (
+              <span style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '4px', display: 'block' }}>
+                (Deixe em branco para manter a foto atual)
+              </span>
+            )}
           </div>
 
           <div className="form-group">
@@ -170,7 +210,7 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
           <div className="actions-row">
             <button type="submit" className="btn-submit" disabled={enviando}>
               {enviando
-                ? 'Salvando...'
+                ? 'Enviando e Salvando...'
                 : produtoEditando
                 ? '💾 Salvar Alterações'
                 : '➕ Cadastrar Peça'}
