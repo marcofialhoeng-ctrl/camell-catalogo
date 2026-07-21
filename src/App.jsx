@@ -79,7 +79,7 @@ export default function App() {
               src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
               alt="Logo Camel Autopeças"
               style={{
-                height: "45px",
+                height: "70px",
                 width: "auto",
                 objectFit: "contain",
                 borderRadius: "6px",
