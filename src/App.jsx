@@ -73,16 +73,29 @@ export default function App() {
     <div>
       <header className="header">
         <div className="header-content">
-          <div>
-            <span className="logo-badge">CAMEL • AUTOPEÇAS</span>
-            <h1 className="header-title">
-              {visao === "admin" ? "Painel Administrativo" : "Catálogo Virtual"}
-            </h1>
+          {/* ÁREA DA LOGO + NOME DA LOJA */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <img
+              src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
+              alt="Logo Camel Autopeças"
+              style={{
+                height: "45px",
+                width: "auto",
+                objectFit: "contain",
+                borderRadius: "6px",
+              }}
+            />
+            <div>
+              <span className="logo-badge">CAMEL • AUTOPEÇAS</span>
+              <h1 className="header-title">
+                {visao === "admin" ? "Painel Administrativo" : "Catálogo Virtual"}
+              </h1>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              className="btn-admin" 
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              className="btn-admin"
               onClick={handleAlternarVisao}
             >
               {visao === "admin" ? "🔒 Sair do Painel" : "⚙️ Painel da Loja"}
