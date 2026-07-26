@@ -8,6 +8,10 @@ export default function App() {
   const [produtos, setProdutos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [visao, setVisao] = useState("cliente");
+  const [carrinho, setCarrinho] = useState([]);
+
+  // ⚠️ DIGITE O NÚMERO DO WHATSAPP DA LOJA AQUI (Com DDD, ex: "5532999999999")
+  const NUMERO_WHATSAPP = "5532999999999";
 
   // Função para buscar os produtos diretamente do Supabase
   const buscarProdutos = async () => {
@@ -47,6 +51,66 @@ export default function App() {
     };
   }, []);
 
+  // --- FUNÇÕES DO CARRINHO DE COMPRAS ---
+
+  // 1. Adicionar produto ao carrinho
+  const adicionarAoCarrinho = (produto) => {
+    setCarrinho((prev) => {
+      const itemExistente = prev.find((item) => item.id === produto.id);
+      if (itemExistente) {
+        return prev.map((item) =>
+          item.id === produto.id
+            ? { ...item, quantidade: item.quantidade + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...produto, quantidade: 1 }];
+    });
+  };
+
+  // 2. Remover produto do carrinho
+  const removerDoCarrinho = (idProduto) => {
+    setCarrinho((prev) => prev.filter((item) => item.id !== idProduto));
+  };
+
+  // 3. Alterar quantidade (+1 ou -1)
+  const alterarQuantidade = (idProduto, delta) => {
+    setCarrinho((prev) =>
+      prev
+        .map((item) => {
+          if (item.id === idProduto) {
+            const novaQtd = item.quantidade + delta;
+            return novaQtd > 0 ? { ...item, quantidade: novaQtd } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
+
+  // 4. Limpar o carrinho
+  const limparCarrinho = () => {
+    setCarrinho([]);
+  };
+
+  // 5. Enviar mensagem formatada para o WhatsApp da loja
+  const enviarPedidoWhatsApp = () => {
+    if (carrinho.length === 0) return;
+
+    let mensagem = "👋 *Olá! Gostaria de fazer uma cotação/orçamento dos seguintes itens:*\n\n";
+
+    carrinho.forEach((item, index) => {
+      mensagem += `${index + 1}. *${item.nome}*\n`;
+      if (item.codigo) mensagem += `   - Cód: ${item.codigo}\n`;
+      mensagem += `   - Quantidade: ${item.quantidade}\n\n`;
+    });
+
+    mensagem += "Podem me confirmar a disponibilidade e valores?";
+
+    const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, "_blank");
+  };
+
   // Alterna a visão com verificação de senha
   const handleAlternarVisao = () => {
     if (visao === "admin") {
@@ -68,6 +132,9 @@ export default function App() {
       </div>
     );
   }
+
+  // Quantidade total de itens no carrinho
+  const totalItensCarrinho = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
 
   return (
     <div>
@@ -95,7 +162,7 @@ export default function App() {
               src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
               alt="Logo Camel Autopeças"
               style={{
-                height: "100px", // Logo configurada em 100px
+                height: "100px",
                 width: "auto",
                 objectFit: "contain",
                 borderRadius: "6px"
@@ -122,7 +189,16 @@ export default function App() {
         {visao === "admin" ? (
           <PainelAdmin produtos={produtos} buscarProdutos={buscarProdutos} />
         ) : (
-          <CatalogoCliente produtos={produtos} />
+          <CatalogoCliente 
+            produtos={produtos}
+            carrinho={carrinho}
+            adicionarAoCarrinho={adicionarAoCarrinho}
+            removerDoCarrinho={removerDoCarrinho}
+            alterarQuantidade={alterarQuantidade}
+            limparCarrinho={limparCarrinho}
+            enviarPedidoWhatsApp={enviarPedidoWhatsApp}
+            totalItensCarrinho={totalItensCarrinho}
+          />
         )}
       </main>
     </div>
