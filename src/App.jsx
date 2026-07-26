@@ -6,17 +6,16 @@ import "./App.css";
 
 export default function App() {
   const [produtos, setProdutos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [visao, setVisao] = useState("cliente");
   const [carrinho, setCarrinho] = useState([]);
 
-  // ⚠️ DIGITE O NÚMERO DO WHATSAPP DA LOJA AQUI (Com DDD, ex: "5532999999999")
-  const NUMERO_WHATSAPP = "5532999999999";
+  const NUMERO_WHATSAPP = "5532999842634";
 
-  // Função para buscar os produtos diretamente do Supabase
+  // Buscar produtos do Supabase
   const buscarProdutos = async () => {
     try {
-      setCarregando(true);
       const { data, error } = await supabase
         .from("produtos")
         .select("*")
@@ -26,23 +25,44 @@ export default function App() {
       setProdutos(data || []);
     } catch (error) {
       console.error("Erro ao buscar produtos:", error.message);
-    } finally {
-      setCarregando(false);
     }
   };
 
-  useEffect(() => {
-    buscarProdutos();
+  // Buscar categorias do Supabase
+  const buscarCategorias = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categorias")
+        .select("*");
 
-    // Inscreve para atualizações em tempo real no banco
+      if (error) throw error;
+      setCategorias(data || []);
+    } catch (error) {
+      console.error("Erro ao buscar categorias:", error.message);
+    }
+  };
+
+  const carregarDados = async () => {
+    setCarregando(true);
+    await Promise.all([buscarProdutos(), buscarCategorias()]);
+    setCarregando(false);
+  };
+
+  useEffect(() => {
+    carregarDados();
+
+    // Inscrição em tempo real para mudanças em produtos e categorias
     const canal = supabase
-      .channel("mudancas-produtos")
+      .channel("mudancas-banco")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "produtos" },
-        () => {
-          buscarProdutos();
-        }
+        () => buscarProdutos()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "categorias" },
+        () => buscarCategorias()
       )
       .subscribe();
 
@@ -51,9 +71,7 @@ export default function App() {
     };
   }, []);
 
-  // --- FUNÇÕES DO CARRINHO DE COMPRAS ---
-
-  // 1. Adicionar produto ao carrinho
+  // Funções do carrinho
   const adicionarAoCarrinho = (produto) => {
     setCarrinho((prev) => {
       const itemExistente = prev.find((item) => item.id === produto.id);
@@ -68,12 +86,10 @@ export default function App() {
     });
   };
 
-  // 2. Remover produto do carrinho
   const removerDoCarrinho = (idProduto) => {
     setCarrinho((prev) => prev.filter((item) => item.id !== idProduto));
   };
 
-  // 3. Alterar quantidade (+1 ou -1)
   const alterarQuantidade = (idProduto, delta) => {
     setCarrinho((prev) =>
       prev
@@ -88,30 +104,23 @@ export default function App() {
     );
   };
 
-  // 4. Limpar o carrinho
-  const limparCarrinho = () => {
-    setCarrinho([]);
-  };
+  const limparCarrinho = () => setCarrinho([]);
 
-  // 5. Enviar mensagem formatada para o WhatsApp da loja
   const enviarPedidoWhatsApp = () => {
     if (carrinho.length === 0) return;
 
     let mensagem = "👋 *Olá! Gostaria de fazer uma cotação/orçamento dos seguintes itens:*\n\n";
-
     carrinho.forEach((item, index) => {
       mensagem += `${index + 1}. *${item.nome}*\n`;
       if (item.codigo) mensagem += `   - Cód: ${item.codigo}\n`;
       mensagem += `   - Quantidade: ${item.quantidade}\n\n`;
     });
-
     mensagem += "Podem me confirmar a disponibilidade e valores?";
 
     const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, "_blank");
   };
 
-  // Alterna a visão com verificação de senha
   const handleAlternarVisao = () => {
     if (visao === "admin") {
       setVisao("cliente");
@@ -133,7 +142,6 @@ export default function App() {
     );
   }
 
-  // Quantidade total de itens no carrinho
   const totalItensCarrinho = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
 
   return (
@@ -149,14 +157,12 @@ export default function App() {
             gap: "16px" 
           }}
         >
-          {/* LADO ESQUERDO: CATÁLOGO VIRTUAL / PAINEL ADMINISTRATIVO */}
           <div style={{ textAlign: "left" }}>
             <h1 className="header-title" style={{ margin: 0, fontSize: "20px" }}>
               {visao === "admin" ? "Painel Administrativo" : "Catálogo Virtual"}
             </h1>
           </div>
 
-          {/* CENTRO: LOGO EM 100PX + CAMEL AUTOPEÇAS */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
             <img
               src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
@@ -173,12 +179,8 @@ export default function App() {
             </span>
           </div>
 
-          {/* LADO DIREITO: BOTÃO DO PAINEL DA LOJA */}
           <div style={{ textAlign: "right" }}>
-            <button
-              className="btn-admin"
-              onClick={handleAlternarVisao}
-            >
+            <button className="btn-admin" onClick={handleAlternarVisao}>
               {visao === "admin" ? "🔒 Sair do Painel" : "⚙️ Painel da Loja"}
             </button>
           </div>
@@ -187,10 +189,16 @@ export default function App() {
 
       <main>
         {visao === "admin" ? (
-          <PainelAdmin produtos={produtos} buscarProdutos={buscarProdutos} />
+          <PainelAdmin 
+            produtos={produtos} 
+            buscarProdutos={buscarProdutos}
+            categorias={categorias}
+            buscarCategorias={buscarCategorias}
+          />
         ) : (
           <CatalogoCliente 
             produtos={produtos}
+            categorias={categorias}
             carrinho={carrinho}
             adicionarAoCarrinho={adicionarAoCarrinho}
             removerDoCarrinho={removerDoCarrinho}
