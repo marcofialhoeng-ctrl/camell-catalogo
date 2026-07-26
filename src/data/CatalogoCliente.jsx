@@ -1,16 +1,8 @@
 import React, { useState } from 'react';
 
-const categorias = [
-  { id: 'todas', nome: 'Todas as Peças' },
-  { id: 'automotiva', nome: 'Peças Automotivas' },
-  { id: 'caminhao', nome: 'Caminhão & Ônibus' },
-  { id: 'estetica', nome: 'Estética & Limpeza' },
-  { id: 'ferramentas', nome: 'Ferramentas' },
-  { id: 'eletrica-oleos', nome: 'Elétrica & Óleos' },
-];
-
 export default function CatalogoCliente({ 
   produtos = [], 
+  categorias = [], // 👈 Agora recebe as categorias do Supabase dinamicamente
   carrinho = [], 
   adicionarAoCarrinho, 
   removerDoCarrinho, 
@@ -26,6 +18,11 @@ export default function CatalogoCliente({
 
   // Número do WhatsApp da loja para dúvidas individuais
   const whatsappNumber = "5532999842634";
+
+  // Monta a lista de exibição garantindo que 'Todas as Peças' seja a 1ª opção
+  const categoriasExibicao = categorias.some((c) => c.id === 'todas')
+    ? categorias
+    : [{ id: 'todas', nome: 'Todas as Peças' }, ...categorias];
 
   const produtosFiltrados = produtos.filter((item) => {
     const bateCategoria = categoriaAtiva === 'todas' || item.categoria === categoriaAtiva;
@@ -70,9 +67,9 @@ export default function CatalogoCliente({
         </a>
       </div>
 
-      {/* Categorias (Deslizável no celular) */}
+      {/* Categorias Dinâmicas (Renderizadas a partir do Banco de Dados) */}
       <div className="categories-flex">
-        {categorias.map((cat) => (
+        {categoriasExibicao.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setCategoriaAtiva(cat.id)}
