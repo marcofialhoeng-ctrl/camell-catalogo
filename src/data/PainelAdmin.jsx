@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-const categorias = [
-  { id: 'automotiva', nome: 'Peças Automotivas' },
-  { id: 'caminhao', nome: 'Caminhão & Ônibus' },
-  { id: 'estetica', nome: 'Estética & Limpeza' },
-  { id: 'ferramentas', nome: 'Ferramentas' },
-  { id: 'eletrica-oleos', nome: 'Elétrica & Óleos' },
-];
-
-export default function PainelAdmin({ produtos = [], buscarProdutos }) {
+export default function PainelAdmin({ 
+  produtos = [], 
+  buscarProdutos, 
+  categorias = [], 
+  buscarCategorias 
+}) {
+  // Estados para Produtos
   const [nome, setNome] = useState('');
   const [codigo, setCodigo] = useState('');
-  const [categoria, setCategoria] = useState('automotiva');
+  const [categoria, setCategoria] = useState(categorias[0]?.id || 'automotiva');
   const [descricao, setDescricao] = useState('');
-  const [imagem, setImagem] = useState(''); // Guarda a URL atual (para edição)
-  const [imagemArquivo, setImagemArquivo] = useState(null); // Guarda o novo arquivo selecionado
+  const [imagem, setImagem] = useState('');
+  const [imagemArquivo, setImagemArquivo] = useState(null);
 
-  // Estado para controlar a edição
+  // Estados de Controle de Edição e Envio
   const [produtoEditando, setProdutoEditando] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
-  // Preenche o formulário para edição
+  // Estados para Gerenciamento de Categorias / Abas
+  const [novaCategoriaNome, setNovaCategoriaNome] = useState('');
+  const [salvandoCategoria, setSalvandoCategoria] = useState(false);
+
+  // Preenche o formulário para edição de produto
   const iniciarEdicao = (prod) => {
     setProdutoEditando(prod);
     setNome(prod.nome);
@@ -29,26 +31,79 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
     setCategoria(prod.categoria);
     setDescricao(prod.descricao || '');
     setImagem(prod.imagem);
-    setImagemArquivo(null); // Reseta o arquivo selecionado
+    setImagemArquivo(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Limpa o formulário
+  // Limpa o formulário de produto
   const cancelarEdicao = () => {
     setProdutoEditando(null);
     setNome('');
     setCodigo('');
-    setCategoria('automotiva');
+    setCategoria(categorias[0]?.id || 'automotiva');
     setDescricao('');
     setImagem('');
     setImagemArquivo(null);
   };
 
-  // Salva no Supabase (cria novo ou atualiza)
+  // Funções de Gerenciamento de Categorias / Abas
+  const handleAdicionarCategoria = async (e) => {
+    e.preventDefault();
+    if (!novaCategoriaNome.trim()) {
+      alert('Digite o nome da nova categoria.');
+      return;
+    }
+
+    setSalvandoCategoria(true);
+    try {
+      // Gera um ID amigável sem acentos/espaços (ex: "🔥 Promoções" -> "promocoes")
+      const idGerado = novaCategoriaNome
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      const { error } = await supabase.from('categorias').insert([
+        { id: idGerado || `cat-${Date.now()}`, nome: novaCategoriaNome.trim() }
+      ]);
+
+      if (error) throw error;
+
+      alert('Nova categoria criada com sucesso!');
+      setNovaCategoriaNome('');
+      if (buscarCategorias) await buscarCategorias();
+    } catch (error) {
+      alert('Erro ao criar categoria: ' + error.message);
+    } finally {
+      setSalvandoCategoria(false);
+    }
+  };
+
+  const handleDeletarCategoria = async (catId, catNome) => {
+    if (catId === 'todas') {
+      alert('A categoria "Todas as Peças" não pode ser excluída.');
+      return;
+    }
+
+    if (window.confirm(`Tem certeza que deseja excluir a aba "${catNome}"? Produtos associados a ela ficarão sem categoria definida.`)) {
+      try {
+        const { error } = await supabase.from('categorias').delete().eq('id', catId);
+        if (error) throw error;
+
+        alert('Categoria removida!');
+        if (buscarCategorias) await buscarCategorias();
+      } catch (error) {
+        alert('Erro ao excluir categoria: ' + error.message);
+      }
+    }
+  };
+
+  // Salva Produto no Supabase
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Na criação, exige a seleção do arquivo. Na edição, pode manter a foto antiga.
     if (!nome || !codigo || (!produtoEditando && !imagemArquivo)) {
       alert('Por favor, preencha os campos obrigatórios e selecione uma imagem.');
       return;
@@ -57,14 +112,12 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
     setEnviando(true);
 
     try {
-      let urlImagemFinal = imagem; // Mantém a imagem atual por padrão (se for edição)
+      let urlImagemFinal = imagem;
 
-      // Se o usuário selecionou um arquivo novo da galeria
       if (imagemArquivo) {
         const extensao = imagemArquivo.name.split('.').pop();
         const nomeArquivo = `${Date.now()}_${Math.random().toString(36).substring(2)}.${extensao}`;
 
-        // Upload no bucket 'Produtos' do Storage
         const { error: uploadError } = await supabase.storage
           .from('Produtos')
           .upload(nomeArquivo, imagemArquivo);
@@ -73,7 +126,6 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
           throw new Error('Erro ao enviar foto: ' + uploadError.message);
         }
 
-        // Pega a URL pública gerada
         const { data: urlData } = supabase.storage
           .from('Produtos')
           .getPublicUrl(nomeArquivo);
@@ -82,7 +134,6 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
       }
 
       if (produtoEditando) {
-        // ATUALIZA A PEÇA
         const { error } = await supabase
           .from('produtos')
           .update({
@@ -97,7 +148,6 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
         if (error) throw error;
         alert('Peça atualizada com sucesso!');
       } else {
-        // CADASTRAR NOVA
         const { error } = await supabase.from('produtos').insert([
           {
             nome,
@@ -136,6 +186,66 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
 
   return (
     <div className="container">
+
+      {/* --- SEÇÃO 1: GERENCIAR CATEGORIAS / ABAS --- */}
+      <div className="admin-panel" style={{ marginBottom: "24px", border: "1px solid #333" }}>
+        <h2 className="admin-title" style={{ fontSize: "16px", marginBottom: "12px" }}>
+          🏷️ Gerenciar Categorias & Abas do Catálogo
+        </h2>
+
+        {/* Formulário para Nova Categoria */}
+        <form onSubmit={handleAdicionarCategoria} style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Ex: 🔥 Promoções, Kit Filtros, Lançamentos..."
+            value={novaCategoriaNome}
+            onChange={(e) => setNovaCategoriaNome(e.target.value)}
+            style={{ flex: 1, minWidth: "200px" }}
+          />
+          <button 
+            type="submit" 
+            className="btn-submit" 
+            disabled={salvandoCategoria}
+            style={{ width: "auto", padding: "0 20px" }}
+          >
+            {salvandoCategoria ? 'Criando...' : '➕ Criar Aba'}
+          </button>
+        </form>
+
+        {/* Lista de Categorias Cadastradas */}
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {categorias.map((cat) => (
+            <div 
+              key={cat.id} 
+              style={{ 
+                background: "#2a2a2a", 
+                padding: "6px 12px", 
+                borderRadius: "20px", 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "8px",
+                fontSize: "12px",
+                color: "#fff",
+                border: "1px solid #444"
+              }}
+            >
+              <span>{cat.nome}</span>
+              {cat.id !== 'todas' && (
+                <button
+                  onClick={() => handleDeletarCategoria(cat.id, cat.nome)}
+                  style={{ background: "none", border: "none", color: "#ff4d4d", cursor: "pointer", fontWeight: "bold", padding: "0 2px" }}
+                  title="Excluir Categoria"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* --- SEÇÃO 2: CADASTRAR / EDITAR PRODUTOS --- */}
       <div className="admin-panel">
         <h2 className="admin-title">
           {produtoEditando ? '✏️ Editar Peça' : '➕ Cadastrar Nova Peça'}
@@ -165,7 +275,7 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
           </div>
 
           <div className="form-group">
-            <label>Categoria *</label>
+            <label>Categoria / Aba *</label>
             <select
               className="form-select"
               value={categoria}
@@ -179,7 +289,6 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
             </select>
           </div>
 
-          {/* CAMPO NOVO: Upload de Foto da Galeria */}
           <div className="form-group">
             <label>Foto da Peça (Galeria / Dispositivo) *</label>
             <input
@@ -230,6 +339,7 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
         </form>
       </div>
 
+      {/* --- SEÇÃO 3: LISTAGEM DE PRODUTOS --- */}
       <h3 style={{ fontSize: '14px', marginBottom: '12px', color: '#a1a1aa' }}>
         Peças Cadastradas ({produtos.length})
       </h3>
@@ -245,7 +355,6 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
             <div className="product-info">
               <h2 className="product-name">{item.nome}</h2>
 
-              {/* BOTOES DE AÇÃO */}
               <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
                 <button
                   onClick={() => iniciarEdicao(item)}
@@ -284,6 +393,7 @@ export default function PainelAdmin({ produtos = [], buscarProdutos }) {
           </div>
         ))}
       </div>
+
     </div>
   );
 }
