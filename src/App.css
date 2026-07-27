@@ -50,7 +50,7 @@ body {
   color: #0f172a;
 }
 
-/* Botão Alternar Visão (Admin / Cliente) - AGORA AZUL */
+/* Botão Alternar Visão (Admin / Cliente) - AZUL */
 .btn-admin {
   background-color: #2563eb; /* Azul */
   color: #ffffff;
@@ -214,7 +214,7 @@ body {
   transition: all 0.15s ease;
 }
 
-/* CATEGORIA SELECIONADA - AGORA AZUL */
+/* CATEGORIA SELECIONADA - AZUL */
 .cat-btn.active {
   background-color: #2563eb; /* Azul ao clicar */
   color: #ffffff;
@@ -306,7 +306,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
 }
 
@@ -319,6 +319,14 @@ body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Preço no Card do Produto */
+.product-price {
+  font-size: 15px;
+  font-weight: 800;
+  color: #2563eb;
+  margin-top: 2px;
 }
 
 .click-hint {
@@ -445,6 +453,13 @@ body {
   line-height: 1.25;
 }
 
+.modal-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: #2563eb;
+  margin-top: 2px;
+}
+
 /* Caixa do Resumo/Descrição */
 .modal-description {
   background-color: #f8fafc;
@@ -524,7 +539,7 @@ body {
   margin-top: 16px;
 }
 
-/* BOTÃO DE ENVIAR/CADASTRAR - AGORA AZUL */
+/* BOTÃO DE ENVIAR/CADASTRAR - AZUL */
 .btn-submit {
   width: 100%;
   background-color: #2563eb; /* Azul */
