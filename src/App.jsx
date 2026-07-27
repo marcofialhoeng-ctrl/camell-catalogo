@@ -136,7 +136,7 @@ export default function App() {
 
   if (carregando) {
     return (
-      <div style={{ textAlign: "center", padding: "50px", color: "#fff" }}>
+      <div style={{ textAlign: "center", padding: "50px", color: "#0f172a" }}>
         <h2>Carregando catálogo...</h2>
       </div>
     );
@@ -152,7 +152,7 @@ export default function App() {
           style={{ 
             display: "grid", 
             gridTemplateColumns: "1fr auto 1fr", 
-            alignItems: "flex-start", 
+            alignItems: "center", 
             width: "100%",
             gap: "16px" 
           }}
@@ -163,20 +163,17 @@ export default function App() {
             </h1>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
             <img
               src="https://wwiyetwzzkvuynizijpm.supabase.co/storage/v1/object/public/Produtos/Design%20sem%20nome.png"
               alt="Logo Camel Autopeças"
               style={{
-                height: "100px",
+                height: "150px",
                 width: "auto",
                 objectFit: "contain",
                 borderRadius: "6px"
               }}
             />
-            <span className="logo-badge" style={{ marginTop: "8px" }}>
-              CAMEL • AUTOPEÇAS
-            </span>
           </div>
 
           <div style={{ textAlign: "right" }}>
