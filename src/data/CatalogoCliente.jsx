@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function CatalogoCliente({ 
   produtos = [], 
-  categorias = [], // 👈 Agora recebe as categorias do Supabase dinamicamente
+  categorias = [], 
   carrinho = [], 
   adicionarAoCarrinho, 
   removerDoCarrinho, 
@@ -18,6 +18,15 @@ export default function CatalogoCliente({
 
   // Número do WhatsApp da loja para dúvidas individuais
   const whatsappNumber = "5532999842634";
+
+  // Função auxiliar para formatar valor em R$
+  const formatarPreco = (valor) => {
+    if (valor === null || valor === undefined || valor === '') return null;
+    return Number(valor).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
 
   // Monta a lista de exibição garantindo que 'Todas as Peças' seja a 1ª opção
   const categoriasExibicao = categorias.some((c) => c.id === 'todas')
@@ -86,6 +95,7 @@ export default function CatalogoCliente({
           {produtosFiltrados.map((item) => {
             const itemNoCarrinho = carrinho.find((c) => c.id === item.id);
             const qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.quantidade : 0;
+            const precoFormatado = formatarPreco(item.preco);
 
             return (
               <div 
@@ -99,25 +109,40 @@ export default function CatalogoCliente({
                 </div>
 
                 <div className="product-info">
-                  <h2 className="product-name">{item.nome}</h2>
+                  <div>
+                    <h2 className="product-name">{item.nome}</h2>
+
+                    {/* EXIBIÇÃO DO PREÇO NO CARD (QUANDO PREENCHIDO) */}
+                    {precoFormatado && (
+                      <div style={{ 
+                        fontSize: "15px", 
+                        fontWeight: "800", 
+                        color: "#2563eb", 
+                        marginTop: "4px" 
+                      }}>
+                        {precoFormatado}
+                      </div>
+                    )}
+                  </div>
+
                   <span className="click-hint">Ver detalhes ➔</span>
 
                   {/* BOTÃO ADICIONAR / CONTROLE DE QUANTIDADE NO CARD */}
                   <div style={{ marginTop: "10px" }} onClick={(e) => e.stopPropagation()}>
                     {qtdNoCarrinho > 0 ? (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1e1e1e", padding: "6px", borderRadius: "8px", border: "1px solid #25d366" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#f1f5f9", padding: "6px", borderRadius: "8px", border: "1px solid #10b981" }}>
                         <button 
                           onClick={() => alterarQuantidade(item.id, -1)}
-                          style={{ padding: "6px 12px", background: "#ff4d4d", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                          style={{ padding: "6px 12px", background: "#ef4444", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
                         >
                           -
                         </button>
-                        <span style={{ color: "#fff", fontWeight: "bold", fontSize: "14px" }}>
+                        <span style={{ color: "#0f172a", fontWeight: "bold", fontSize: "13px" }}>
                           {qtdNoCarrinho} no carrinho
                         </span>
                         <button 
                           onClick={() => alterarQuantidade(item.id, 1)}
-                          style={{ padding: "6px 12px", background: "#25d366", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                          style={{ padding: "6px 12px", background: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
                         >
                           +
                         </button>
@@ -128,7 +153,7 @@ export default function CatalogoCliente({
                         style={{
                           width: "100%",
                           padding: "10px",
-                          backgroundColor: "#25d366",
+                          backgroundColor: "#10b981",
                           color: "#fff",
                           border: "none",
                           borderRadius: "8px",
@@ -163,11 +188,11 @@ export default function CatalogoCliente({
             bottom: "20px",
             left: "50%",
             transform: "translateX(-50%)",
-            backgroundColor: "#25d366",
+            backgroundColor: "#10b981",
             color: "#fff",
             padding: "12px 24px",
             borderRadius: "50px",
-            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.4)",
+            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
             display: "flex",
             alignItems: "center",
             gap: "16px",
@@ -191,7 +216,7 @@ export default function CatalogoCliente({
           <button 
             style={{
               backgroundColor: "#fff",
-              color: "#128c7e",
+              color: "#047857",
               border: "none",
               padding: "6px 14px",
               borderRadius: "20px",
@@ -209,59 +234,65 @@ export default function CatalogoCliente({
       {modalCarrinhoAberto && (
         <div className="modal-overlay" onClick={() => setModalCarrinhoAberto(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "500px", width: "90%" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #333", paddingBottom: "10px" }}>
-              <h2 style={{ margin: 0, fontSize: "18px", color: "#fff" }}>🛒 Meu Orçamento</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+              <h2 style={{ margin: 0, fontSize: "18px", color: "#0f172a" }}>🛒 Meu Orçamento</h2>
               <button className="modal-close" onClick={() => setModalCarrinhoAberto(false)}>✕</button>
             </div>
 
             {carrinho.length === 0 ? (
-              <p style={{ color: "#aaa", textAlign: "center", padding: "20px 0" }}>Seu carrinho está vazio.</p>
+              <p style={{ color: "#64748b", textAlign: "center", padding: "20px 0" }}>Seu carrinho está vazio.</p>
             ) : (
               <div>
                 <div style={{ maxHeight: "300px", overflowY: "auto", marginBottom: "20px" }}>
-                  {carrinho.map((item) => (
-                    <div 
-                      key={item.id} 
-                      style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        justifyContent: "space-between", 
-                        padding: "10px 0", 
-                        borderBottom: "1px solid #222" 
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
-                        <img src={item.imagem} alt={item.nome} style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }} />
-                        <div>
-                          <div style={{ color: "#fff", fontSize: "13px", fontWeight: "bold" }}>{item.nome}</div>
-                          <div style={{ color: "#888", fontSize: "11px" }}>Cód: {item.codigo || 'N/A'}</div>
+                  {carrinho.map((item) => {
+                    const precoItem = formatarPreco(item.preco);
+
+                    return (
+                      <div 
+                        key={item.id} 
+                        style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "space-between", 
+                          padding: "10px 0", 
+                          borderBottom: "1px solid #e2e8f0" 
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
+                          <img src={item.imagem} alt={item.nome} style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }} />
+                          <div>
+                            <div style={{ color: "#0f172a", fontSize: "13px", fontWeight: "bold" }}>{item.nome}</div>
+                            <div style={{ color: "#64748b", fontSize: "11px" }}>
+                              Cód: {item.codigo || 'N/A'} {precoItem ? `• ${precoItem}` : ''}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <button 
+                            onClick={() => alterarQuantidade(item.id, -1)}
+                            style={{ width: "26px", height: "26px", background: "#e2e8f0", color: "#0f172a", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                          >
+                            -
+                          </button>
+                          <span style={{ color: "#0f172a", fontWeight: "bold", minWidth: "20px", textAlign: "center" }}>{item.quantidade}</span>
+                          <button 
+                            onClick={() => alterarQuantidade(item.id, 1)}
+                            style={{ width: "26px", height: "26px", background: "#e2e8f0", color: "#0f172a", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                          >
+                            +
+                          </button>
+                          <button 
+                            onClick={() => removerDoCarrinho(item.id)}
+                            style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", marginLeft: "6px", fontSize: "16px" }}
+                            title="Remover"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
-
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <button 
-                          onClick={() => alterarQuantidade(item.id, -1)}
-                          style={{ width: "26px", height: "26px", background: "#333", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                        >
-                          -
-                        </button>
-                        <span style={{ color: "#fff", fontWeight: "bold", minWidth: "20px", textAlign: "center" }}>{item.quantidade}</span>
-                        <button 
-                          onClick={() => alterarQuantidade(item.id, 1)}
-                          style={{ width: "26px", height: "26px", background: "#333", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                        >
-                          +
-                        </button>
-                        <button 
-                          onClick={() => removerDoCarrinho(item.id)}
-                          style={{ background: "none", border: "none", color: "#ff4d4d", cursor: "pointer", marginLeft: "6px", fontSize: "16px" }}
-                          title="Remover"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div style={{ display: "flex", gap: "10px", flexDirection: "column" }}>
@@ -273,7 +304,7 @@ export default function CatalogoCliente({
                     style={{
                       width: "100%",
                       padding: "14px",
-                      backgroundColor: "#25d366",
+                      backgroundColor: "#10b981",
                       color: "#fff",
                       border: "none",
                       borderRadius: "8px",
@@ -295,7 +326,7 @@ export default function CatalogoCliente({
                       width: "100%",
                       padding: "8px",
                       backgroundColor: "transparent",
-                      color: "#888",
+                      color: "#64748b",
                       border: "none",
                       cursor: "pointer",
                       fontSize: "12px"
@@ -327,6 +358,13 @@ export default function CatalogoCliente({
                   Cód: {produtoSelecionado.codigo}
                 </span>
                 <h2 className="modal-title">{produtoSelecionado.nome}</h2>
+                
+                {/* PREÇO NO MODAL DE DETALHES */}
+                {formatarPreco(produtoSelecionado.preco) && (
+                  <div style={{ fontSize: "16px", fontWeight: "800", color: "#2563eb", marginTop: "4px" }}>
+                    {formatarPreco(produtoSelecionado.preco)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -344,7 +382,7 @@ export default function CatalogoCliente({
               style={{
                 width: "100%",
                 padding: "12px",
-                backgroundColor: "#25d366",
+                backgroundColor: "#10b981",
                 color: "#fff",
                 border: "none",
                 borderRadius: "8px",
