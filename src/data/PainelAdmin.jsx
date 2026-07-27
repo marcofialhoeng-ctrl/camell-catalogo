@@ -11,6 +11,7 @@ export default function PainelAdmin({
   const [nome, setNome] = useState('');
   const [codigo, setCodigo] = useState('');
   const [categoria, setCategoria] = useState(categorias[0]?.id || 'automotiva');
+  const [preco, setPreco] = useState(''); // 👈 Novo estado para o preço
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState('');
   const [imagemArquivo, setImagemArquivo] = useState(null);
@@ -29,6 +30,7 @@ export default function PainelAdmin({
     setNome(prod.nome);
     setCodigo(prod.codigo);
     setCategoria(prod.categoria);
+    setPreco(prod.preco ? String(prod.preco).replace('.', ',') : ''); // Carrega o preço
     setDescricao(prod.descricao || '');
     setImagem(prod.imagem);
     setImagemArquivo(null);
@@ -41,6 +43,7 @@ export default function PainelAdmin({
     setNome('');
     setCodigo('');
     setCategoria(categorias[0]?.id || 'automotiva');
+    setPreco(''); // Limpa o preço
     setDescricao('');
     setImagem('');
     setImagemArquivo(null);
@@ -56,7 +59,6 @@ export default function PainelAdmin({
 
     setSalvandoCategoria(true);
     try {
-      // Gera um ID amigável sem acentos/espaços (ex: "🔥 Promoções" -> "promocoes")
       const idGerado = novaCategoriaNome
         .toLowerCase()
         .normalize('NFD')
@@ -133,6 +135,11 @@ export default function PainelAdmin({
         urlImagemFinal = urlData.publicUrl;
       }
 
+      // Converte a string do preço para número ou null caso esteja em branco
+      const precoTratado = preco.trim() !== '' 
+        ? parseFloat(preco.replace(',', '.')) 
+        : null;
+
       if (produtoEditando) {
         const { error } = await supabase
           .from('produtos')
@@ -140,6 +147,7 @@ export default function PainelAdmin({
             nome,
             codigo,
             categoria,
+            preco: precoTratado, // 👈 Salva o preço no UPDATE
             descricao,
             imagem: urlImagemFinal,
           })
@@ -153,6 +161,7 @@ export default function PainelAdmin({
             nome,
             codigo,
             categoria,
+            preco: precoTratado, // 👈 Salva o preço no INSERT
             descricao,
             imagem: urlImagemFinal,
           }
@@ -188,7 +197,7 @@ export default function PainelAdmin({
     <div className="container">
 
       {/* --- SEÇÃO 1: GERENCIAR CATEGORIAS / ABAS --- */}
-      <div className="admin-panel" style={{ marginBottom: "24px", border: "1px solid #333" }}>
+      <div className="admin-panel" style={{ marginBottom: "24px", border: "1px solid #e2e8f0" }}>
         <h2 className="admin-title" style={{ fontSize: "16px", marginBottom: "12px" }}>
           🏷️ Gerenciar Categorias & Abas do Catálogo
         </h2>
@@ -219,22 +228,22 @@ export default function PainelAdmin({
             <div 
               key={cat.id} 
               style={{ 
-                background: "#2a2a2a", 
+                background: "#f1f5f9", 
                 padding: "6px 12px", 
                 borderRadius: "20px", 
                 display: "flex", 
                 alignItems: "center", 
                 gap: "8px",
                 fontSize: "12px",
-                color: "#fff",
-                border: "1px solid #444"
+                color: "#0f172a",
+                border: "1px solid #cbd5e1"
               }}
             >
               <span>{cat.nome}</span>
               {cat.id !== 'todas' && (
                 <button
                   onClick={() => handleDeletarCategoria(cat.id, cat.nome)}
-                  style={{ background: "none", border: "none", color: "#ff4d4d", cursor: "pointer", fontWeight: "bold", padding: "0 2px" }}
+                  style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontWeight: "bold", padding: "0 2px" }}
                   title="Excluir Categoria"
                 >
                   ✕
@@ -289,6 +298,21 @@ export default function PainelAdmin({
             </select>
           </div>
 
+          {/* CAMPO DE PREÇO OPCIONAL */}
+          <div className="form-group">
+            <label>Preço (R$) - Opcional</label>
+            <input
+              type="text"
+              className="form-input"
+              value={preco}
+              onChange={(e) => setPreco(e.target.value)}
+              placeholder="Ex: 89,90 (Deixe em branco para ocultar)"
+            />
+            <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
+              Deixe em branco para vender sob consulta no WhatsApp.
+            </span>
+          </div>
+
           <div className="form-group">
             <label>Foto da Peça (Galeria / Dispositivo) *</label>
             <input
@@ -298,7 +322,7 @@ export default function PainelAdmin({
               onChange={(e) => setImagemArquivo(e.target.files[0])}
             />
             {produtoEditando && !imagemArquivo && (
-              <span style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '4px', display: 'block' }}>
+              <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
                 (Deixe em branco para manter a foto atual)
               </span>
             )}
@@ -330,7 +354,7 @@ export default function PainelAdmin({
                 type="button"
                 className="btn-submit"
                 onClick={cancelarEdicao}
-                style={{ backgroundColor: '#3f3f46', color: '#fff' }}
+                style={{ backgroundColor: '#64748b', color: '#fff' }}
               >
                 ✕ Cancelar
               </button>
@@ -340,7 +364,7 @@ export default function PainelAdmin({
       </div>
 
       {/* --- SEÇÃO 3: LISTAGEM DE PRODUTOS --- */}
-      <h3 style={{ fontSize: '14px', marginBottom: '12px', color: '#a1a1aa' }}>
+      <h3 style={{ fontSize: '14px', marginBottom: '12px', color: '#64748b' }}>
         Peças Cadastradas ({produtos.length})
       </h3>
 
@@ -355,13 +379,20 @@ export default function PainelAdmin({
             <div className="product-info">
               <h2 className="product-name">{item.nome}</h2>
 
+              {/* Exibição do preço cadastrado na listagem do admin */}
+              {item.preco && (
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#2563eb', marginTop: '4px' }}>
+                  {Number(item.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
                 <button
                   onClick={() => iniciarEdicao(item)}
                   style={{
                     flex: 1,
-                    backgroundColor: '#f59e0b',
-                    color: '#000',
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
                     border: 'none',
                     borderRadius: '6px',
                     padding: '8px',
