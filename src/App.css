@@ -3,12 +3,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent; /* Remove o brilho ao tocar no celular */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background-color: #f8fafc; /* Fundo geral claro */
-  color: #0f172a; /* Texto escuro com alto contraste */
+  background-color: #f8fafc;
+  color: #0f172a;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding-bottom: 50px;
 }
@@ -34,7 +34,7 @@ body {
 
 .logo-badge {
   display: inline-block;
-  background-color: #f59e0b;
+  background-color: #2563eb; /* Azul principal */
   color: #ffffff;
   font-weight: 900;
   font-size: 10px;
@@ -50,9 +50,9 @@ body {
   color: #0f172a;
 }
 
-/* Botão Alternar Visão (Admin / Cliente) */
+/* Botão Alternar Visão (Admin / Cliente) - AGORA AZUL */
 .btn-admin {
-  background-color: #f59e0b;
+  background-color: #2563eb; /* Azul */
   color: #ffffff;
   border: none;
   font-weight: 700;
@@ -60,7 +60,11 @@ body {
   padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.1s active;
+  transition: background-color 0.15s, transform 0.1s active;
+}
+
+.btn-admin:hover {
+  background-color: #1d4ed8; /* Azul mais escuro no hover */
 }
 
 .btn-admin:active {
@@ -92,8 +96,8 @@ body {
 }
 
 .search-input:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  border-color: #2563eb; /* Borda azul ao clicar */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* BANNER DE DESTAQUE: Falar com o Vendedor */
@@ -210,10 +214,11 @@ body {
   transition: all 0.15s ease;
 }
 
+/* CATEGORIA SELECIONADA - AGORA AZUL */
 .cat-btn.active {
-  background-color: #f59e0b;
+  background-color: #2563eb; /* Azul ao clicar */
   color: #ffffff;
-  border-color: #f59e0b;
+  border-color: #2563eb;
 }
 
 /* Grid Adaptativo */
@@ -271,7 +276,7 @@ body {
   top: 6px;
   right: 6px;
   background: rgba(255, 255, 255, 0.95);
-  color: #d97706;
+  color: #1d4ed8; /* Azul para o código */
   border: 1px solid #e2e8f0;
   font-size: 10px;
   font-family: monospace;
@@ -318,7 +323,7 @@ body {
 
 .click-hint {
   font-size: 10px;
-  color: #d97706;
+  color: #2563eb; /* Azul */
   font-weight: 600;
   display: block;
 }
@@ -361,7 +366,7 @@ body {
 
 .modal-content {
   background-color: #ffffff;
-  border-top: 3px solid #f59e0b;
+  border-top: 3px solid #2563eb; /* Borda topo do modal em azul */
   border-radius: 20px 20px 0 0;
   width: 100%;
   max-width: 500px;
@@ -376,7 +381,7 @@ body {
 @media (min-width: 640px) {
   .modal-content {
     border: 1px solid #e2e8f0;
-    border-top: 3px solid #f59e0b;
+    border-top: 3px solid #2563eb;
     border-radius: 16px;
     animation: fadeIn 0.2s ease-out;
   }
@@ -398,7 +403,6 @@ body {
   font-size: 14px;
 }
 
-/* Visual Compacto da Imagem Menor no Modal */
 .modal-header-compact {
   display: flex;
   gap: 12px;
@@ -424,8 +428,8 @@ body {
 }
 
 .product-code-badge {
-  background-color: #fef3c7;
-  color: #b45309;
+  background-color: #dbeafe; /* Azul bem claro */
+  color: #1e40af;
   font-size: 10px;
   font-family: monospace;
   font-weight: bold;
@@ -453,7 +457,7 @@ body {
 .modal-description h3 {
   font-size: 11px;
   text-transform: uppercase;
-  color: #d97706;
+  color: #2563eb; /* Azul */
   margin-bottom: 4px;
   letter-spacing: 0.5px;
 }
@@ -485,7 +489,7 @@ body {
   font-size: 15px;
   font-weight: 700;
   margin-bottom: 14px;
-  color: #d97706;
+  color: #2563eb; /* Título do Painel Admin em Azul */
 }
 
 .form-group {
@@ -511,7 +515,7 @@ body {
 }
 
 .form-input:focus, .form-select:focus {
-  border-color: #f59e0b;
+  border-color: #2563eb; /* Foco do campo em azul */
 }
 
 .actions-row {
@@ -520,9 +524,10 @@ body {
   margin-top: 16px;
 }
 
+/* BOTÃO DE ENVIAR/CADASTRAR - AGORA AZUL */
 .btn-submit {
   width: 100%;
-  background-color: #f59e0b;
+  background-color: #2563eb; /* Azul */
   color: #ffffff;
   font-weight: bold;
   padding: 12px;
@@ -530,6 +535,11 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.15s;
+}
+
+.btn-submit:hover {
+  background-color: #1d4ed8;
 }
 
 .empty-state {
