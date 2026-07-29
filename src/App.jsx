@@ -126,7 +126,7 @@ export default function App() {
       setVisao("cliente");
     } else {
       const senhaDigitada = prompt("Digite a senha de administrador:");
-      if (senhaDigitada === "camel123") {
+      if (senhaDigitada === "ricardo321") {
         setVisao("admin");
       } else if (senhaDigitada !== null) {
         alert("Senha incorreta! Acesso negado.");
